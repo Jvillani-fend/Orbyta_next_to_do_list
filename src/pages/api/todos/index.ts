@@ -2,11 +2,12 @@ import axios from "axios";
 import { NextApiRequest, NextApiResponse } from "next";
 import { v4 as uuidv4 } from "uuid";
 import { database } from "../../../../firebaseInit";
+import { ToDo } from "./types/toDo.interface";
 
 const dummyTodo = {
   id: 3,
   name: "New to do",
-  status: false,
+  state:false,
 };
 export default async function handler(
   req: NextApiRequest,
@@ -16,12 +17,11 @@ export default async function handler(
     case "POST":
       try {
         const todoId = uuidv4();
-        // const todoData = { id: todoId, ...req.body };
-        const { status, name, description } = req.body
+        const { state, name, description } = req.body
         await database.ref(`todos/${todoId}`).set({
           id: todoId,
           name,
-          status,
+          state,
           description,
         })
         return res.status(200).json({ message: "to do added succesfully" });
@@ -33,10 +33,22 @@ export default async function handler(
       break;
     case "GET":
       try {
-        const todos = await axios.get(
-          "https://to-do-list-next-default-rtdb.europe-west1.firebasedatabase.app/todos.json"
-        );
-        return res.status(200).json(todos.data);
+        const { order } = req.query
+        const data = (await database.ref(`/todos`).once("value")).val();
+        const todos: ToDo[] = Object.keys(data).map((key) => data[key]).filter((el: ToDo) => {
+          switch (order) {
+            case "completed":
+            return (el.state === "true")
+              break;
+            case "to_complete":
+              return (el.state === "false")
+              break;
+            default:
+              return true
+              break;
+          }
+        })
+        return res.status(200).json({todos,message:"success"});
       } catch (e) {
         return res
           .status(500)
@@ -44,15 +56,6 @@ export default async function handler(
       }
       break;
     case "DELETE":
-      break;
-    case "PUT":
-      try {
-        const todos = await axios.put(
-          "https://to-do-list-next-default-rtdb.europe-west1.firebasedatabase.app/todos.json"
-        );
-      } catch (e) {
-
-      }
       break;
     default:
       res.status(405).json({ error: "Method Not Allowed" });

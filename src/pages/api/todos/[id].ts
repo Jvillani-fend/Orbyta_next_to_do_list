@@ -12,13 +12,12 @@ export default async function handler(
       try {
         let exists:boolean = false
         await database.ref(`todos/${todoId}`).once("value", (snapshot) => {snapshot.val() !== null ? exists = true : exists= false})
-        console.log("exist",exists)
         if (exists) {
-          const { status, name, description } = req.body
+          const {state, name, description } = req.body
           const updates: any = {}; // An empty object to store the updates
 
-          if (status !== undefined && status !== "") {
-            updates["status"] = status;
+          if (state !== undefined && state !== "") {
+            updates["state"] = state;
           }
           if (name !== undefined && name !== "") {
             updates["name"] = name;
