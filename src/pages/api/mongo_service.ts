@@ -1,5 +1,5 @@
 import { MongoClient } from "mongodb";
-import { MONGODBTODOS, MONGODBURI } from "../../../const";
+import { MONGODBTODOS } from "../../../const";
 import { v4 as uuidv4 } from "uuid";
 import { ObjectId } from "mongodb"
 import { NextApiRequest, NextApiResponse } from "next";
@@ -53,14 +53,14 @@ export const editTodo = async (res: NextApiResponse, req: NextApiRequest) => {
             }
             await db.collection("todos").updateOne({ _id: objectId }, { $set: updates })
             client.close()
-            res.status(200).json({ message: "Todo updated" })
+            return res.status(200).json({ message: "Todo updated successfully" })
         } else {
             client.close()
-            res.status(404).json({ message: "The specified to do doesn't exist" })
+            return res.status(404).json({ message: "The specified to do doesn't exist" })
         }
     } catch (e) {
         client && client.close()
-        res.status(500).json({ message: "there was a problem inside the request", e })
+        return res.status(500).json({ message: "there was a problem inside the request", e })
     }
 }
 
@@ -72,10 +72,18 @@ export const deleteTodo = async (res: NextApiResponse, req: NextApiRequest) => {
     try {
         client = await connectDB()
         const db = client.db()
-        const removeItem = await db.collection("todos").deleteOne({ _id: objectId })
-        res.status(200).json({ message: "to do removed successfully" })
+        const exists = await db.collection("todos").findOne({ _id: objectId }) ? true : false
+        if (exists) {
+            const removeItem = await db.collection("todos").deleteOne({ _id: objectId })
+            client.close()
+            return res.status(200).json({ message: "to do removed successfully" })
+        } else {
+            client.close()
+            return res.status(404).json({ message: "Item not found" })
+        }
+
     } catch (e) {
-        res.status(500).json({ message: "there was a problem inside the request", e })
+        return res.status(500).json({ message: "there was a problem inside the request", e })
     }
 }
 
