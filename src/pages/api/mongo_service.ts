@@ -73,7 +73,7 @@ export const deleteTodo = async (res: NextApiResponse, req: NextApiRequest) => {
         const db = client.db()
         const exists = await db.collection("todos").findOne({ id: todoId }) ? true : false
         if (exists) {
-            const removeItem = await db.collection("todos").deleteOne({ id:todoId })
+            const removeItem = await db.collection("todos").deleteOne({ id: todoId })
             client.close()
             return res.status(200).json({ message: "to do removed successfully" })
         } else {
@@ -114,7 +114,7 @@ export const getList = async (res: NextApiResponse, req: NextApiRequest) => {
 }
 
 
-export const deleteCompleted = async (res:NextApiResponse,req:NextApiRequest)=>{
+export const deleteCompleted = async (res: NextApiResponse, req: NextApiRequest) => {
     let client;
     try {
         const deleteOperations: any = {};
@@ -122,7 +122,7 @@ export const deleteCompleted = async (res:NextApiResponse,req:NextApiRequest)=>{
         client = await connectDB()
         const db = client.db()
         const collection = db.collection("todos")
-       await collection.deleteMany({state:true})
+        await collection.deleteMany({ state: true })
         client.close()
         res.status(200).json({ message: "Completed tasks removed" })
     } catch (e) {
