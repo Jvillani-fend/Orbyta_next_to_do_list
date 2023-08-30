@@ -1,2 +1,0 @@
-export const MONGODBURI = "mongodb+srv://villanijacopojob:ou75rAZtT0FZWMu6@cluster0.rnsij4n.mongodb.net/?retryWrites=true&w=majority"
-export const MONGODBTODOS = "mongodb+srv://villanijacopojob:ou75rAZtT0FZWMu6@cluster0.rnsij4n.mongodb.net/todos?retryWrites=true&w=majority"
