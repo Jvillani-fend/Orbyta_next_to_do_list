@@ -10,7 +10,7 @@ export default async function handler(
   const todoId = req.query.id as string
   switch (req.method) {
     case "PUT":
-      editTodo(res, req)
+      await editTodo(res, req)
       break;
     case "DELETE":
       await deleteTodo(res, req)
