@@ -6,11 +6,6 @@ import { ToDo } from "./types/toDo.interface";
 import { insertTodo } from "../mongo_service";
 import { getList } from "../mongo_service";
 
-const dummyTodo = {
-  id: 3,
-  name: "New to do",
-  state: false,
-};
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse

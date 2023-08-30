@@ -3,6 +3,7 @@ import { MONGODBTODOS } from "../../../const";
 import { v4 as uuidv4 } from "uuid";
 import { ObjectId } from "mongodb"
 import { NextApiRequest, NextApiResponse } from "next";
+import axios from "axios";
 
 export const connectDB = async () => {
     const client = await MongoClient.connect(MONGODBTODOS)
@@ -31,13 +32,12 @@ export const insertTodo = async (res: NextApiResponse, req: NextApiRequest) => {
 
 export const editTodo = async (res: NextApiResponse, req: NextApiRequest) => {
     const todoId = req.query.id as string
-    const objectId = new ObjectId(todoId)
     let client
     try {
         let exists: boolean = false
         client = await connectDB()
         const db = client.db()
-        exists = await db.collection("todos").findOne({ _id: objectId }) ? true : false
+        exists = await db.collection("todos").findOne({ id: todoId }) ? true : false
         if (exists) {
             const { state, name, description } = req.body
             const updates: any = {}; // An empty object to store the updates
@@ -51,7 +51,7 @@ export const editTodo = async (res: NextApiResponse, req: NextApiRequest) => {
             if (description !== undefined && description !== "") {
                 updates["description"] = description;
             }
-            await db.collection("todos").updateOne({ _id: objectId }, { $set: updates })
+            await db.collection("todos").updateOne({ id: todoId }, { $set: updates })
             client.close()
             return res.status(200).json({ message: "Todo updated successfully" })
         } else {
@@ -67,14 +67,13 @@ export const editTodo = async (res: NextApiResponse, req: NextApiRequest) => {
 
 export const deleteTodo = async (res: NextApiResponse, req: NextApiRequest) => {
     const todoId = req.query.id as string
-    const objectId = new ObjectId(todoId)
     let client;
     try {
         client = await connectDB()
         const db = client.db()
-        const exists = await db.collection("todos").findOne({ _id: objectId }) ? true : false
+        const exists = await db.collection("todos").findOne({ id: todoId }) ? true : false
         if (exists) {
-            const removeItem = await db.collection("todos").deleteOne({ _id: objectId })
+            const removeItem = await db.collection("todos").deleteOne({ id:todoId })
             client.close()
             return res.status(200).json({ message: "to do removed successfully" })
         } else {
@@ -97,10 +96,10 @@ export const getList = async (res: NextApiResponse, req: NextApiRequest) => {
         let todos;
         switch (order) {
             case "completed":
-                todos = await collection.find({ state: "true" }).toArray()
+                todos = await collection.find({ state: true }).toArray()
                 break;
             case "to_complete":
-                todos = await collection.find({ state: "false" }).toArray()
+                todos = await collection.find({ state: false }).toArray()
                 break;
         }
         client.close()
@@ -111,5 +110,23 @@ export const getList = async (res: NextApiResponse, req: NextApiRequest) => {
         return res
             .status(500)
             .json({ error: "Failed to complete the request", errorDetails: e });
+    }
+}
+
+
+export const deleteCompleted = async (res:NextApiResponse,req:NextApiRequest)=>{
+    let client;
+    try {
+        const deleteOperations: any = {};
+        const allToDos = await axios.get("http://localhost:3000/api/todos")
+        client = await connectDB()
+        const db = client.db()
+        const collection = db.collection("todos")
+       await collection.deleteMany({state:true})
+        client.close()
+        res.status(200).json({ message: "Completed tasks removed" })
+    } catch (e) {
+        client && client.close()
+        res.status(500).json({ message: "There was an error deleting completed tasks", errorInfo: e })
     }
 }
