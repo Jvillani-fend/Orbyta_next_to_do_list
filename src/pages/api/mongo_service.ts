@@ -101,6 +101,9 @@ export const getList = async (res: NextApiResponse, req: NextApiRequest) => {
             case "to_complete":
                 todos = await collection.find({ state: false }).toArray()
                 break;
+            default:
+                todos = collection.find({}).toArray()
+                break;    
         }
         client.close()
         return res.status(200).json({ todos: todos, message: "success" });
