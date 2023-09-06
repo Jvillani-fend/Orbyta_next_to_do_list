@@ -4,12 +4,16 @@ import { v4 as uuidv4 } from "uuid";
 import { ObjectId } from "mongodb"
 import { NextApiRequest, NextApiResponse } from "next";
 import axios from "axios";
-
+import Cors from "cors"
 export const connectDB = async () => {
     const client = await MongoClient.connect(MONGODBTODOS)
     return client;
 }
 
+const cors = Cors({
+    origin: 'http://localhost:4200', // Replace with your Angular app's URL
+    methods: ['GET', 'POST',"PUT","PATCH","DELETE"], // Specify allowed HTTP methods
+  });
 
 export const insertTodo = async (res: NextApiResponse, req: NextApiRequest) => {
     let client;
@@ -87,6 +91,7 @@ export const deleteTodo = async (res: NextApiResponse, req: NextApiRequest) => {
 }
 
 export const getList = async (res: NextApiResponse, req: NextApiRequest) => {
+    cors(req,res,()=>{console.log("ok")})
     let client = null;
     try {
         const { order } = req.query
